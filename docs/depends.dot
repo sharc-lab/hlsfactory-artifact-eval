@@ -1,0 +1,28 @@
+digraph depends {
+    rankdir=LR
+    "Design Space Base" [label="Design Space Base\n(run.py)"]
+    "Design Space Expanded" [label="Design Space Expanded\n(run.py)"]
+    "Parallelization Speedup" [label="Parallelization Speedup\n(run.py)"]
+    "Intel Design Flow" [label="Intel Design Flow\n(run.py)"]
+    "Regression Benchmarking" [label="Regression Benchmarking\n(run.py)"]
+
+    "Design Space Vis" [label="Design Space Vis\n(analyze.py)"]
+    "Regression Testing Analysis" [label="Regression Testing Analysis\n(analyze.py)"]
+    "HLSyn Vis" [label="HLSyn Vis\n(analyze.py)"]
+    "Intel Flow Vis" [label="Intel Flow Vis\n(analyze.py)"]
+    "Parallel Speedup Vis" [label="Parallel Speedup Vis\n(analyze.py)"]
+
+    "Design Space Base" -> "Design Space Vis"
+    "Design Space Expanded" -> "Design Space Vis"
+
+
+    "Regression Benchmarking" -> "Regression Testing Analysis"
+
+    "Parallelization Speedup" -> "Parallel Speedup Vis"
+
+    "Intel Design Flow" -> "HLSyn Vis"
+    "Parallelization Speedup" -> "HLSyn Vis"
+
+    "Intel Design Flow" -> "Intel Flow Vis"
+    
+}
