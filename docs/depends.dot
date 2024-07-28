@@ -1,28 +1,59 @@
 digraph depends {
     rankdir=LR
-    "Design Space Base" [label="Design Space Base\n(run.py)"]
-    "Design Space Expanded" [label="Design Space Expanded\n(run.py)"]
-    "Parallelization Speedup" [label="Parallelization Speedup\n(run.py)"]
-    "Intel Design Flow" [label="Intel Design Flow\n(run.py)"]
-    "Regression Benchmarking" [label="Regression Benchmarking\n(run.py)"]
+    nodesep=0.2; // Increase the space between nodes
+    ranksep=1; // Increase the space between ranks
+    dpi=300; // Increase the resolution of the image
 
-    "Design Space Vis" [label="Design Space Vis\n(analyze.py)"]
-    "Regression Testing Analysis" [label="Regression Testing Analysis\n(analyze.py)"]
-    "HLSyn Vis" [label="HLSyn Vis\n(analyze.py)"]
-    "Intel Flow Vis" [label="Intel Flow Vis\n(analyze.py)"]
-    "Parallel Speedup Vis" [label="Parallel Speedup Vis\n(analyze.py)"]
+    // Global node style
+    node [fontsize=12, fontname="Arial"];
 
-    "Design Space Base" -> "Design Space Vis"
-    "Design Space Expanded" -> "Design Space Vis"
+    // Subgraph for "Dataset Runs"
+    subgraph cluster_dataset_runs {
+        label=<<b>Dataset Generation Runs</b>>;
+        style=filled;
+        color=black;
+        fillcolor=white;
+        fontsize=14;
+        fontname="Arial Bold";
+        node [style=filled, color=lightblue, shape=rect, fontsize=12, fontname="Arial"];
+        
+        "Design Space Base" [label="Design Space Base Dataset\n(design_space_base_run.py)"];
+        "Design Space Sampled" [label="Design Space Sampled Dataset\n(design_space_run.py)"];
+        "Intel Design Flow" [label="Intel Design Flow Dataset\n(intel_run.py)"];
+        "Parallelization Test" [label="Parallelization Test Dataset\n(parallel_test_run.py)"];
+        "Regression Benchmarking Test" [label="Regression Benchmarking Test Dataset\n(regression_testing_run.py)"];
+    }
 
+    // Subgraph for "Case Study Analysis"
+    subgraph cluster_case_study {
+        label=<<b>Case Study Analyses</b>>;
+        style=filled;
+        color=black;
+        fillcolor=white;
+        fontsize=14;
+        fontname="Arial Bold";
+        node [style=filled, color=lightgreen, shape=rect, fontsize=12, fontname="Arial"];
+        
+        "Design Space Vis 2D" [label="Design Space Vis 2D\n(design_space_vis_2d.py)"];
+        "Design Space Vis Stacked" [label="Design Space Vis Stacked\n(design_space_vis_stacked.py)"];
+        "Regression Testing Analysis" [label="Regression Testing Analysis\n(regression_testing_vis.py.py)"];
+        "HLSyn Vis" [label="HLSyn Vis\n(hlsyn_vis.py.py)"];
+        "Intel Flow Vis" [label="Intel Flow Vis\n(intel_vis.py)"];
+        "Parallel Speedup Vis" [label="Parallel Speedup Vis\n(parallel_test_vis.py)"];
+    }
 
-    "Regression Benchmarking" -> "Regression Testing Analysis"
+    // Edges between nodes
+    "Design Space Base" -> "Design Space Vis 2D";
+    "Design Space Sampled" -> "Design Space Vis 2D";
 
-    "Parallelization Speedup" -> "Parallel Speedup Vis"
+    "Design Space Base" -> "Design Space Vis Stacked";
+    "Design Space Sampled" -> "Design Space Vis Stacked";
 
-    "Intel Design Flow" -> "HLSyn Vis"
-    "Parallelization Speedup" -> "HLSyn Vis"
+    "Regression Benchmarking Test" -> "Regression Testing Analysis";
 
-    "Intel Design Flow" -> "Intel Flow Vis"
-    
+    "Parallelization Test" -> "Parallel Speedup Vis";
+
+    "Parallelization Test" -> "HLSyn Vis";
+
+    "Intel Design Flow" -> "Intel Flow Vis";
 }

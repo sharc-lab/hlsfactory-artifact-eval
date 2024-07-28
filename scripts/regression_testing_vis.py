@@ -9,7 +9,6 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from scipy.stats import gmean, wilcoxon
 
-
 DIR_CURRENT_SCRIPT = Path(__file__).parent
 
 FIGURES_DIR = DIR_CURRENT_SCRIPT / "figures"

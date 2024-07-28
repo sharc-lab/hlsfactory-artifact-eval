@@ -2,3 +2,7 @@
 .ruff_cache/
 .mypy_cache/
 .vscode/
+
+.datasets/
+.figures/
+.results/

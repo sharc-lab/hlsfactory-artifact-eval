@@ -1,0 +1,18 @@
+name: hlsfactory-ae
+channels:
+  - https://sharc-lab.github.io/HLSFactory/dist-conda
+  - conda-forge
+dependencies:
+  - python=3.10
+  - hlsfactory
+  - pandas
+  - psutil
+  - pyyaml
+  - tqdm
+  - python-dotenv
+  - pacmap
+  - pandas
+  - scikit-learn
+  - scipy
+  - seaborn
+  - matplotlib
