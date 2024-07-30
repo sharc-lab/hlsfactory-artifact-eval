@@ -2,6 +2,16 @@
 
 This repository contains directions and scripts to reproduce the case studies in the HLSFactory paper as part of the artifact evaluation process.
 
+If you want to quickly run the artifact evaluation, you can follow the commands below:
+
+```bash
+conda env create -f environment.yml
+conda activate hlsfactory-ae
+bash run_all.sh
+```
+
+You will find the output in the `results` and `figures` directories with the `figures` directory containing case study visualizations found in the paper.
+
 - [HLSFactory Artifact Evaluation](#hlsfactory-artifact-evaluation)
   - [General Information](#general-information)
   - [Prerequisites](#prerequisites)
@@ -12,12 +22,14 @@ This repository contains directions and scripts to reproduce the case studies in
       - [Vivado and Vitis HLS Environment Variables](#vivado-and-vitis-hls-environment-variables)
       - [Intel HLS Compiler and Quartus Prime Environment Variables](#intel-hls-compiler-and-quartus-prime-environment-variables)
       - [Evaluation Environment Variables](#evaluation-environment-variables)
-  - [Evaluation Overview](#evaluation-overview)
+  - [Evaluation: Quick](#evaluation-quick)
+  - [Evaluation: Detailed](#evaluation-detailed)
     - [Step 0: Ensuring HLSFactory is Working](#step-0-ensuring-hlsfactory-is-working)
     - [Step 1: Generating or Obtaining Datasets](#step-1-generating-or-obtaining-datasets)
-      - [Generating Datasets](#generating-datasets)
       - [Obtaining Pre-Generated Datasets](#obtaining-pre-generated-datasets)
+      - [Generating Datasets](#generating-datasets)
     - [Step 2: Running Case Study Analysis Scripts](#step-2-running-case-study-analysis-scripts)
+  - [Results and Figures](#results-and-figures)
 
 ## General Information
 
@@ -66,6 +78,8 @@ conda activate hlsfactory-ae
 
 #### Vendor Tools Required for Dataset Generation
 
+**Note that vendor tools are not strictly required to run the case study analysis scripts. You can use the pre-generated datasets provided.**
+
 If users wish to generate datasets from scratch for case study evaluation rather than source pre-generated datasets, they need to have the following vendor tools installed, as outlined below:
 
 - AMD/Xilinx Vitis HLS, `2021.1` and `2023.1`
@@ -75,11 +89,12 @@ If users wish to generate datasets from scratch for case study evaluation rather
 
 Note that not all tools are needed for all case studies. Most case studies only require Vitis HLS and Vivado `2023.1`. The regression testing case study requires both Vitis HLS and Vivado `2021.1` and `2023.1`. The Intel flow case study only requires the Intel HLS Compiler and Quartus Prime `21.1.0`.
 
-As noted, vendor tools are not needed to run the case study analysis scripts if using the pre-generated datasets.
-
 ### Evaluation Specific Setup
 
 When running the dataset generation scripts and case study analysis scripts, users need to specify the following environment variables outlined in the sections below. These variables should be defined in the `.env` file located in the root directory of the repository. We provide an initial partially completed `.env` file as a starting point for users to modify with their specific paths. Users are only expected to modify the paths to the vendor tools on their local machines. The default paths for the other environment variables should be sufficient for most users.
+
+**Note that if you are using pre-generated datasets, you do not need to set up the vendor tools environment variables. In this case, you can use the default `.env` file provided without any modifications.**
+
 
 #### Vivado and Vitis HLS Environment Variables
 
@@ -111,7 +126,30 @@ When running the dataset generation scripts and case study analysis scripts, use
   - Mainly used for parallel dataset generation.
   - Also used by some case study analysis scripts to speed up processing.
 
-## Evaluation Overview
+## Evaluation: Quick
+
+If you want to quickly run the artifact evaluation, you can run:
+
+```bash
+bash run_all.sh
+```
+
+This is essentially a script that runs the following commands in this order:
+
+```bash
+python scripts/obtain_pregenerated_datasets.py
+
+python scripts/design_space_vis_2d.py
+python scripts/design_space_vis_stacked.py
+python scripts/regression_testing_vis.py
+python scripts/parallel_test_vis.py
+python scripts/hlsyn_vis.py
+python scripts/intel_vis.py
+```
+
+After running `scripts/obtain_pregenerated_datasets.py`, you can run any of the other case study analysis scripts as you wish.
+
+## Evaluation: Detailed
 
 There are two steps to evaluate the case studies in the paper:
 
@@ -125,7 +163,7 @@ Each case study analysis script requires a specific dataset. We outline these de
 - The `Regression Testing Analysis` case study analysis requires the `Regression Benchmarking Test` dataset.
 - The `Intel Flow Vis` case study analysis requires the `Intel Flow` dataset.
 - The `Parallel Speedup Vis` case study analysis requires the `Parallelization Test` dataset.
-- The `HLSyn Vis` case study analysis requires the `Parallelization Test` dataset.
+- The `HLSyn Vis` case study analysis requires the `Parallelization Test` dataset and the external `HLSyn` dataset.
 - Both the `Design Space Vis Stacked` and `Design Space Vis 2D` case studies analyses require both the `Design Space Base` and `Design Space Test` datasets.
 
 ### Step 0: Ensuring HLSFactory is Working
@@ -141,9 +179,29 @@ This means HLSFactory is working!
 
 ### Step 1: Generating or Obtaining Datasets
 
+To run the case study analysis scripts, users need to generate or obtain the specific datasets for each case study. We provide scripts to generate the datasets from scratch or obtain the pre-generated datasets from Zenodo.
+
+**We highly recommend obtaining the pre-generated datasets as generating the datasets from scratch will take a significant amount of time and disk space and also require multiple vendor tools to be installed.**
+
+#### Obtaining Pre-Generated Datasets
+
+Users can download the pre-generated datasets which are archived on Zenodo.
+
+Users can run the following command to download the pre-generated datasets:
+
+```bash
+python scripts/obtain_pregenerated_datasets.py
+```
+
+These datasets were generated during the development of the HLSFactory tool and the development of the case studies reported in the paper.
+
+This script also downloads the HLSyn dataset from GitHub as it is already cleanly archived by the original authors on GitHub.
+
 #### Generating Datasets
 
-To generate all the datasets for the case studies, users can run any of the following commands:
+**Warning: this flow is time-consuming and requires a significant amount of disk space, if you simply want to reproduce the case study results reported in the paper, please use the pre-generated datasets.**
+
+To generate all the datasets for the case studies from scratch, users can run any of the following commands:
   
 ```bash
 python scripts/design_space_base_run.py
@@ -157,19 +215,7 @@ This will generate the datasets in the local `./datasets` directory assuming the
 
 The dataset generation scripts will take a significant amount of time to run, as they will generate a large number of HLS designs and run them through the vendor tools. This also requires a non-trivial amount of disk space to store the generated datasets.
 
-We estimate it will require approx. 200 GB with the longest run taking 12 to 24 hours assuming the use of a default 32 cores in parallel (which can also be adjusted in the `.env` file).
-
-#### Obtaining Pre-Generated Datasets
-
-If users do not wish to generate the datasets from scratch, they can download the pre-generated datasets which are archived on Zenodo.
-
-Users can run the following command to download the pre-generated datasets:
-
-```bash
-python scripts/obtain_pregenerated_datasets.py
-```
-
-**IMPORTANT: This flow is not complete and is still a work in progress **due to **the **current**** severe IT** infrastructure outages at Georgia Tech. We will update this as soon as these issues are resolved.**
+We estimate it will require approx. 250 GB with the longest run taking 12 to 24 hours assuming the use of a default 32 cores in parallel (which can also be adjusted in the `.env` file).
 
 ### Step 2: Running Case Study Analysis Scripts
 
@@ -191,3 +237,10 @@ This will generate the figures and numerical results in the local `./figures` an
 These scripts assume that the datasets have been generated or obtained and are located in the local `./datasets` directory (or the directory specified in the `.env` file). If the datasets are not found, the scripts will raise an error. Please ensure that the required datasets for a specific case study have been generated or obtained before running the corresponding case study analysis script.
 
 These should be relatively quick to run compared to run, ideally less than 2 minutes total and don't require any additional significant disk space.
+
+
+## Results and Figures
+
+After running the case study analysis scripts, users can find the generated figures and numerical results in the local `./figures` and `./results` directories, respectively. The figures are the more important output since most of the case studies are visualizations of the HLSFactory data for different possible real-world applications. Please feel free to cross-reference the figures with the paper. The results directory contains tables and aggregations of numerical results that are used to generate the figures and can be used for quick analysis with other software tools.
+
+In theory, assuming the vendor tools are deterministic and we seed any code that uses a random library, the figures should be identical to the ones in the paper. In practice, this is not 100% possible. We attempt to seed all code depending on random generation (e.g., `scikit-learn`'s preprocessing), but there are cases where it is not possible to seed the code (e.g., `pacmap`'s dimensionality reduction). With pre-generated datasets, the results should be identical or very close to the results in the paper. However, when generating datasets from scratch using vendor tools, we have not assessed how deterministic the tool outputs are.

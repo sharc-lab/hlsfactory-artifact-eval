@@ -22,6 +22,8 @@ digraph depends {
         "Intel Design Flow" [label="Intel Design Flow Dataset\n(intel_run.py)"];
         "Parallelization Test" [label="Parallelization Test Dataset\n(parallel_test_run.py)"];
         "Regression Benchmarking Test" [label="Regression Benchmarking Test Dataset\n(regression_testing_run.py)"];
+
+        "hlsyn" [label="HLSyn Dataset\n(external repo)", style=filled, color=lightcoral, shape=rect, fontsize=10, fontname="Arial"];
     }
 
     // Subgraph for "Case Study Analysis"
@@ -53,6 +55,7 @@ digraph depends {
 
     "Parallelization Test" -> "Parallel Speedup Vis";
 
+    "hlsyn" -> "HLSyn Vis";
     "Parallelization Test" -> "HLSyn Vis";
 
     "Intel Design Flow" -> "Intel Flow Vis";
