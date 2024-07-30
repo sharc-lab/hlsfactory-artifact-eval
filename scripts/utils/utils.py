@@ -83,7 +83,3 @@ def get_env_vars(
 
 def get_all_env_vars(env_path: Path | str | None = None) -> dict[str, int | Path]:
     return get_env_vars(ALL_VARS, env_path)
-
-
-if __name__ == "__main__":
-    print(get_all_env_vars(Path(__file__).parent / "test.env"))

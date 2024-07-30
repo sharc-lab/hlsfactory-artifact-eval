@@ -16,13 +16,19 @@ from hlsfactory.framework import (
     count_total_designs_in_dataset_collection,
 )
 from hlsfactory.opt_dsl_frontend import OptDSLPassthroughFrontend
+from utils.utils import get_env_vars
 
-WORK_DIR = Path("/usr/scratch/skaram7/hlsdataset_workdir_design_space_base")
+DIR_DATASETS = get_env_vars(["DIR_DATASETS"])["DIR_DATASETS"]
+assert isinstance(DIR_DATASETS, Path)
+
+WORK_DIR = DIR_DATASETS / "hlsfactory_workdir_design_space_base"
+
 if WORK_DIR.exists():
     shutil.rmtree(WORK_DIR)
 WORK_DIR.mkdir()
 
-N_JOBS = 32
+N_JOBS = get_env_vars(["N_JOBS"])["N_JOBS"]
+assert isinstance(N_JOBS, int)
 CPU_AFFINITY = list(range(N_JOBS))
 
 
@@ -61,8 +67,13 @@ print(f"Total Designs: {total_count}")
 print(f"Total Designs post-frontend: {total_count_post_frontend}")
 
 
-VIVADO_PATH = Path("/tools/software/xilinx/Vivado/2023.1")
-VITIS_HLS_PATH = Path("/tools/software/xilinx/Vitis_HLS/2023.1")
+# VIVADO_PATH = Path("/tools/software/xilinx/Vivado/2023.1")
+# VITIS_HLS_PATH = Path("/tools/software/xilinx/Vitis_HLS/2023.1")
+
+VIVADO_PATH = get_env_vars(["VIVADO_PATH__2023_1"])["VIVADO_PATH__2023_1"]
+assert isinstance(VIVADO_PATH, Path)
+VITIS_HLS_PATH = get_env_vars(["VITIS_HLS_PATH__2023_1"])["VITIS_HLS_PATH__2023_1"]
+assert isinstance(VITIS_HLS_PATH, Path)
 
 VIVADO_BIN = VIVADO_PATH / "bin" / "vivado"
 VITIS_HLS_BIN = VITIS_HLS_PATH / "bin" / "vitis_hls"

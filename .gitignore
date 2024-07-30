@@ -3,6 +3,6 @@
 .mypy_cache/
 .vscode/
 
-.datasets/
-.figures/
-.results/
+datasets/
+figures/
+results/

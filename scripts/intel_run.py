@@ -1,92 +1,34 @@
 import shutil
 from pathlib import Path
 
-from hlsfactory.flow_intel import IntelHLSSynthFlow, IntelQuartusImplFlow
-from hlsfactory.framework import DesignDataset
-from hlsfactory.opt_dsl_frontend_intel import OptDSLFrontendIntel
-
-####### Please dont touch this file, this is used for Zhigang's personal experiment, if you want to use, make your own copy #########
-
-
-DIR_CURRENT_SCRIPT = Path(__file__).parent
-
-WORK_DIR = Path(
-    "/home/projects/ljohn/simplescalar/zhigang/ML4Accel-Dataset/Intel_HLSDataset_demo"
+from hlsfactory.datasets_builtin import (
+    dataset_machsuite_builder,
+    dataset_polybench_builder,
 )
+from hlsfactory.flow_intel import IntelHLSSynthFlow, IntelQuartusImplFlow
+from hlsfactory.opt_dsl_frontend_intel import OptDSLFrontendIntel
+from utils.utils import get_env_vars
+
+DIR_DATASETS = get_env_vars(["DIR_DATASETS"])["DIR_DATASETS"]
+assert isinstance(DIR_DATASETS, Path)
+
+WORK_DIR = DIR_DATASETS / "hlsfactory_intel_data"
+
 if WORK_DIR.exists():
     shutil.rmtree(WORK_DIR)
 WORK_DIR.mkdir()
 
-# DIR_DATASET_POLYBENCH_XILINX = (
-#     DIR_CURRENT_SCRIPT.parent / "fpga_ml_dataset" / "HLS_dataset" / "polybench"
-# )
-DIR_DATASET_POLYBENCH_INTEL = (
-    DIR_CURRENT_SCRIPT.parent / "fpga_ml_dataset" / "HLS_dataset" / "polybench"
-)
-
-# DIR_DATASET_MACHSUITE_INTEL = (
-#     DIR_CURRENT_SCRIPT.parent / "fpga_ml_dataset" / "HLS_dataset" / "machsuite"
-# )
-
-# DIR_DATASET_CHSTONE_XILINX = Path(
-#     DIR_CURRENT_SCRIPT.parent / "fpga_ml_dataset" / "HLS_dataset" / "chstone"
-# )
-
-# DIR_DATASET_ROSETTA_XILINX = Path(
-#     DIR_CURRENT_SCRIPT.parent / "fpga_ml_dataset" / "HLS_dataset" / "rosetta"
-# )
-
-# DIR_DATASET_SIMPLE = (
-#     DIR_CURRENT_SCRIPT.parent / "fpga_ml_dataset" / "HLS_dataset" / "simple"
-# )
-
-# dataset_polybench_xilinx = DesignDataset.from_dir(
-#     "polybench_xilinx",
-#     DIR_DATASET_POLYBENCH_XILINX,
-# )
-# dataset_polybench_xilinx = dataset_polybench_xilinx.copy_dataset(WORK_DIR)
-
-dataset_polybench_intel = DesignDataset.from_dir(
-    "polybench_intel",
-    DIR_DATASET_POLYBENCH_INTEL,
-)
-# dataset_polybench_intel = dataset_polybench_intel.copy_dataset(WORK_DIR)
+N_JOBS = get_env_vars(["N_JOBS"])["N_JOBS"]
+assert isinstance(N_JOBS, int)
+CPU_AFFINITY = list(range(N_JOBS))
 
 
-# dataset_machsuite_intel = DesignDataset.from_dir(
-#     "machsuite_intel",
-#     DIR_DATASET_MACHSUITE_INTEL,
-#     exclude_dir_filter=lambda dir: dir.name == "common",
-# )
-# dataset_machsuite_intel = dataset_machsuite_intel.copy_dataset(WORK_DIR)
-
-
-# dataset_chstone_xilinx = DesignDataset.from_dir(
-#     "chstone_xilinx", DIR_DATASET_CHSTONE_XILINX
-# )
-# dataset_rosetta_xilinx = DesignDataset.from_dir(
-#     "rosetta_xilinx", DIR_DATASET_ROSETTA_XILINX,
-# )
-
-# dataset_simple = DesignDataset.from_dir(
-#     "simple",
-#     DIR_DATASET_SIMPLE,
-# )
-
-# datasets = {
-#     "polybench_xilinx": dataset_polybench_xilinx,
-#     # "machsuite_xilinx": dataset_machsuite_xilinx,
-#     # "chstone_xilinx": dataset_chstone_xilinx,
-#     # "rosetta_xilinx": dataset_rosetta_xilinx,
-#     # "simple": dataset_simple,
-# }
+dataset_polybench_intel = dataset_polybench_builder("polybench_xilinx", WORK_DIR)
+dataset_machsuite_intel = dataset_machsuite_builder("machsuite_xilinx", WORK_DIR)
 
 datasets = {
     "polybench_intel": dataset_polybench_intel,
-    #    "machsuite_intel": dataset_machsuite_intel,
-    # "chstone_xilinx": dataset_chstone_xilinx,
-    # "rosetta_xilinx": dataset_rosetta_xilinx,
-    # "simple": dataset_simple,
+    "machsuite_intel": dataset_machsuite_intel,
 }
 
 opt_dsl_frontend_intel = OptDSLFrontendIntel(
@@ -95,33 +37,25 @@ opt_dsl_frontend_intel = OptDSLFrontendIntel(
 
 designs_after_frontend = {
     dataset_name: opt_dsl_frontend_intel.execute_multiple_designs(
-        dataset.designs, n_jobs=32
+        dataset.designs, n_jobs=N_JOBS
     )
     for dataset_name, dataset in datasets.items()
 }
 
-# my_pickle = Path('/home/projects/ljohn/simplescalar/zhigang/pickle_object/test.pickle')
-# # with open(my_pickle, 'wb') as file:
-# #     pickle.dump(designs_after_frontend, file)
-# with open(my_pickle, 'rb') as file:
-#     designs_after_frontend = pickle.load(file)
+IPP_BIN = get_env_vars(["IPP_BIN_PATH"])["IPP_BIN_PATH"]
+assert isinstance(IPP_BIN, Path)
+QUARTUS_BIN = get_env_vars(["QUARTUS_SH_BIN_PATH"])["QUARTUS_SH_BIN_PATH"]
+assert isinstance(QUARTUS_BIN, Path)
 
-toolflow_intel_hls_synth = IntelHLSSynthFlow()
-toolflow_intel_impl_synth = IntelQuartusImplFlow()
+
+toolflow_intel_hls_synth = IntelHLSSynthFlow(ipp_bin=str(IPP_BIN.resolve()))
+toolflow_intel_impl_synth = IntelQuartusImplFlow(quartus_bin=str(QUARTUS_BIN.resolve()))
 
 for dataset_name, design_list in designs_after_frontend.items():
     toolflow_intel_hls_synth.execute_multiple_designs(design_list)
 
-########### This step is optional, it is only necessary if power anlaysis is needed ####################
-
-# quartus_power_set =  Path('/home/projects/ljohn/simplescalar/zhigang/pickle_object/quartus_power_set')
-# power_to_csv = Path('/home/projects/ljohn/simplescalar/zhigang/pickle_object/power_to_csv.tcl')
-# for dataset_name, design_list in designs_after_frontend.items():
-#     for design in design_list:
-#         # os.remove(design.dir / 'quartus_power_set')
-#         # os.remove(design.dir / 'power_to_csv.tcl')
-#         shutil.copy(quartus_power_set, design.dir)
-#         shutil.copy(power_to_csv, design.dir)
 
 for dataset_name, design_list in designs_after_frontend.items():
-    toolflow_intel_impl_synth.execute_multiple_designs(design_list)
+    toolflow_intel_impl_synth.execute_multiple_designs(
+        design_list, n_jobs=N_JOBS, cpu_affinity=CPU_AFFINITY
+    )

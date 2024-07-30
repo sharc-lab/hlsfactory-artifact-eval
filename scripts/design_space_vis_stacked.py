@@ -6,6 +6,7 @@ import pandas as pd
 import seaborn as sns
 from matplotlib.patches import Rectangle
 from matplotlib.ticker import NullFormatter
+from utils.utils import get_env_vars
 
 
 def build_df(design_dirs):
@@ -69,20 +70,25 @@ def build_df(design_dirs):
     return df
 
 
-DIR_CURRENT_SCRIPT = Path(__file__).parent
-
-FIGURES_DIR = DIR_CURRENT_SCRIPT / "figures"
+FIGURES_DIR = get_env_vars(["DIR_FIGURES"])["DIR_FIGURES"]
+assert isinstance(FIGURES_DIR, Path)
 FIGURES_DIR.mkdir(exist_ok=True)
 
-DATA_DIR = DIR_CURRENT_SCRIPT / "data"
+DATA_DIR = get_env_vars(["DIR_RESULTS"])["DIR_RESULTS"]
+assert isinstance(DATA_DIR, Path)
 DATA_DIR.mkdir(exist_ok=True)
 
-WORK_DIR = Path("/usr/scratch/skaram7/hlsdataset_workdir_design_space_v2")
+DIR_DATASETS = get_env_vars(["DIR_DATASETS"])["DIR_DATASETS"]
+assert isinstance(DIR_DATASETS, Path)
+
+WORK_DIR = DIR_DATASETS / "hlsfactory_workdir_design_space_sampled"
+
 WORK_DIR_POLYBENCH = WORK_DIR / "polybench_xilinx__post_frontend"
 WORK_DIR_MACHSUITE = WORK_DIR / "machsuite_xilinx__post_frontend"
 WORK_DIR_CHSTONE = WORK_DIR / "chstone_xilinx__post_frontend"
 
-WORK_DIR_BASE = Path("/usr/scratch/skaram7/hlsdataset_workdir_design_space_base")
+WORK_DIR_BASE = DIR_DATASETS / "hlsfactory_workdir_design_space_base"
+
 WORK_DIR_BASE_POLYBENCH = WORK_DIR_BASE / "polybench_xilinx__post_frontend"
 WORK_DIR_BASE_MACHSUITE = WORK_DIR_BASE / "machsuite_xilinx__post_frontend"
 WORK_DIR_BASE_CHSTONE = WORK_DIR_BASE / "chstone_xilinx__post_frontend"

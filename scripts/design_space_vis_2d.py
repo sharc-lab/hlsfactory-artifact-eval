@@ -5,14 +5,14 @@ from pathlib import Path
 import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
+from convex_hull_plotting import draw_rounded_hull
 from matplotlib.patches import Rectangle
 from pacmap import PaCMAP
 from scipy.spatial import ConvexHull
 from sklearn.discriminant_analysis import StandardScaler
 from sklearn.kernel_approximation import Nystroem
 from sklearn.pipeline import Pipeline
-
-from hls_experiments.convex_hull_plotting import draw_rounded_hull
+from utils.utils import get_env_vars
 
 
 def build_df(design_dirs):
@@ -76,15 +76,20 @@ def build_df(design_dirs):
     return df
 
 
-DIR_CURRENT_SCRIPT = Path(__file__).parent
-
-FIGURES_DIR = DIR_CURRENT_SCRIPT / "figures"
+FIGURES_DIR = get_env_vars(["DIR_FIGURES"])["DIR_FIGURES"]
+assert isinstance(FIGURES_DIR, Path)
 FIGURES_DIR.mkdir(exist_ok=True)
 
-DATA_DIR = DIR_CURRENT_SCRIPT / "data"
+DATA_DIR = get_env_vars(["DIR_RESULTS"])["DIR_RESULTS"]
+assert isinstance(DATA_DIR, Path)
 DATA_DIR.mkdir(exist_ok=True)
 
-WORK_DIR = Path("/usr/scratch/skaram7/hlsdataset_workdir_design_space_v2")
+DIR_DATASETS = get_env_vars(["DIR_DATASETS"])["DIR_DATASETS"]
+assert isinstance(DIR_DATASETS, Path)
+
+WORK_DIR = DIR_DATASETS / "hlsfactory_workdir_design_space_sampled"
+
+
 WORK_DIR_POLYBENCH = WORK_DIR / "polybench_xilinx__post_frontend"
 WORK_DIR_MACHSUITE = WORK_DIR / "machsuite_xilinx__post_frontend"
 WORK_DIR_CHSTONE = WORK_DIR / "chstone_xilinx__post_frontend"

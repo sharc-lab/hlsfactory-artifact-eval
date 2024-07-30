@@ -5,6 +5,7 @@ import matplotlib
 import matplotlib.ticker as ticker
 import pandas as pd
 import seaborn as sns
+from convex_hull_plotting import draw_rounded_hull
 from matplotlib import pyplot as plt
 from matplotlib.patches import Rectangle
 from pacmap import PaCMAP
@@ -12,21 +13,25 @@ from scipy.spatial import ConvexHull
 from sklearn.kernel_approximation import Nystroem
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+from utils.utils import get_env_vars
 
-from .convex_hull_plotting import draw_rounded_hull
-
-DIR_CURRENT_SCRIPT = Path(__file__).parent
-
-FIGURES_DIR = DIR_CURRENT_SCRIPT / "figures"
+FIGURES_DIR = get_env_vars(["DIR_FIGURES"])["DIR_FIGURES"]
+assert isinstance(FIGURES_DIR, Path)
 FIGURES_DIR.mkdir(exist_ok=True)
 
-DATA_DIR = DIR_CURRENT_SCRIPT / "data"
+DATA_DIR = get_env_vars(["DIR_RESULTS"])["DIR_RESULTS"]
+assert isinstance(DATA_DIR, Path)
 DATA_DIR.mkdir(exist_ok=True)
 
+DIR_DATASETS = get_env_vars(["DIR_DATASETS"])["DIR_DATASETS"]
+assert isinstance(DIR_DATASETS, Path)
 
-WORK_DIR = Path("/usr/scratch/skaram7/hlsdataset_workdir_parallel_test_run")
 
-USE_CACHE = True
+WORK_DIR = DIR_DATASETS / "hlsfactory_workdir_parallel_test_run"
+
+HLSYN_DATA_DIR = DIR_DATASETS / "HLSyn_data"
+
+USE_CACHE = False
 
 if not (DATA_DIR / "hlsyn_design_space_plot_data.csv").exists() or not USE_CACHE:
     datasets = list(WORK_DIR.glob("*__post_frontend"))
@@ -87,13 +92,15 @@ if not (DATA_DIR / "hlsyn_design_space_plot_data.csv").exists() or not USE_CACHE
     df = pd.DataFrame(df_data)
     df_ours = df[df["parallel_type"] == "naive"]
 
-    hlsyn_dir = DIR_CURRENT_SCRIPT.parent / "fpga_ml_dataset" / "HLS_dataset" / "hlsyn"
+    hlsyn_dir = HLSYN_DATA_DIR
     hlsyn_vitis_hls_version = "2020.2"
     hlsyn_vitis_part = "xilinx_u200"
     hlsyn_target_clock_period = 4.0
     hlsyn_dataset_name = "hlsyn"
 
-    hlsyn_data_files = sorted(list((hlsyn_dir / "designs").glob("*.json")))
+    hlsyn_data_files = sorted(
+        list((hlsyn_dir / "data" / "designs" / "v20").glob("*.json"))
+    )
     hlsyn_data = []
     for hlsyn_data_file in hlsyn_data_files:
         design_name = hlsyn_data_file.stem
@@ -240,23 +247,7 @@ for dataset_name in dataset_names:
 
 
 fig, ax = plt.subplots(figsize=(6, 6))
-# for design_name, df_group in df_transformed.groupby(id_design_name):
-#     ax.scatter(
-#         df_group["PC1"],
-#         df_group["PC2"],
-#         s=2.0,
-#         label=design_name,
-#         color=colors[design_name],
-#     )
-#     x_points = df_group[["PC1", "PC2"]].to_numpy()
-#     draw_rounded_hull(
-#         x_points,
-#         convex_hulls[design_name],
-#         ax,
-#         padding=1.0,
-#         line_kwargs=dict(color=colors[design_name], linewidth=1),
-#         fill_kwargs=dict(alpha=0.15, color=colors[design_name]),
-#     )
+
 
 for dataset_name, df_group in df_transformed.groupby("dataset_name"):
     ax.scatter(
@@ -373,23 +364,7 @@ sns.kdeplot(
 )
 # get the artisis fo the distribution
 artists = ax.get_children()
-# get the last two artists which are the distributions
-print(artists)
 
-# sns.histplot(
-#     bins=40,
-#     data=df_hist,
-#     x="latency_average_cycles",
-#     ax=ax,
-#     stat="density",
-#     hue="dataset_name",
-#     element="step",
-#     fill=True,
-#     common_norm=False,
-#     log_scale=(True, False),
-#     # clip=(0, None),
-#     legend=False,
-# )
 
 leg_artists = [
     Rectangle(
@@ -476,20 +451,6 @@ for i, resource_name in enumerate(resource_names):
             transform=ax.transAxes,
             fontsize=7,
         )
-    # log scale on x axis
-    # sns.histplot(
-    #     bins=40,
-    #     data=df_hist,
-    #     x=resource_name,
-    #     ax=ax,
-    #     stat="density",
-    #     hue="dataset_name",
-    #     element="step",
-    #     fill=True,
-    #     common_norm=False,
-    #     log_scale=(True, False),
-    #     legend=False,
-    # )
 
     ax.set_title(resource_name_map[resource_name])
     ax.set_xlabel("Resource Count", fontsize=9)

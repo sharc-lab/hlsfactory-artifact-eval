@@ -8,17 +8,21 @@ from matplotlib.collections import LineCollection
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from scipy.stats import gmean, wilcoxon
+from utils.utils import get_env_vars
 
-DIR_CURRENT_SCRIPT = Path(__file__).parent
-
-FIGURES_DIR = DIR_CURRENT_SCRIPT / "figures"
+FIGURES_DIR = get_env_vars(["DIR_FIGURES"])["DIR_FIGURES"]
+assert isinstance(FIGURES_DIR, Path)
 FIGURES_DIR.mkdir(exist_ok=True)
 
-DATA_DIR = DIR_CURRENT_SCRIPT / "data"
+DATA_DIR = get_env_vars(["DIR_RESULTS"])["DIR_RESULTS"]
+assert isinstance(DATA_DIR, Path)
 DATA_DIR.mkdir(exist_ok=True)
 
+DIR_DATASETS = get_env_vars(["DIR_DATASETS"])["DIR_DATASETS"]
+assert isinstance(DIR_DATASETS, Path)
 
-WORK_DIR = Path("/usr/scratch/skaram7/hlsdataset_workdir_regression_testing")
+
+WORK_DIR = DIR_DATASETS / "hlsfactory_workdir_regression_testing"
 
 datasets = list(WORK_DIR.glob("*__*"))
 
@@ -622,22 +626,6 @@ kde_plot(
 )
 
 
-# leg = fig.legend(
-#     [
-#         version_0,
-#         version_1,
-#         f"{version_0} Mean",
-#         f"{version_1} Mean",
-#         f"{version_0} Median",
-#         f"{version_1} Median",
-#     ],
-#     loc="lower center",
-#     ncol=6,
-#     # make the spacing between the items in the legend smaller
-#     columnspacing=0.5,
-# )
-
-
 legend_elements = [
     Patch(facecolor=FIG_COLORS[version_0], edgecolor=None, label=version_0, alpha=0.25),
     Patch(facecolor=FIG_COLORS[version_1], edgecolor=None, label=version_1, alpha=0.25),
@@ -682,12 +670,3 @@ fig.suptitle(
 fig.tight_layout()
 fig.subplots_adjust(bottom=0.16)
 fig.savefig(FIGURES_DIR / "regression_testing_kde_plot.png", dpi=300)
-
-
-# new_data = []
-# # groupby design_id, each group will have 2 rows, one for each vitis version
-# for group_name, group in df.groupby("design_id"):
-#     if len(group) != 2:
-#         raise ValueError(f"Group {group_name} has more than 2 rows")
-#     group = group.sort_values(by="vitis_version")
-#     group = group.reset_index(drop=True)

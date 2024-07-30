@@ -1,43 +1,32 @@
 import shutil
 from pathlib import Path
 
+from hlsfactory.datasets_builtin import (
+    dataset_chstone_builder,
+    dataset_machsuite_builder,
+    dataset_polybench_builder,
+)
 from hlsfactory.flow_vitis import VitisHLSSynthFlow
-from hlsfactory.framework import DesignDataset
 from hlsfactory.opt_dsl_frontend import OptDSLFrontend
+from utils.utils import get_env_vars
 
-DIR_CURRENT_SCRIPT = Path(__file__).parent
+DIR_DATASETS = get_env_vars(["DIR_DATASETS"])["DIR_DATASETS"]
+assert isinstance(DIR_DATASETS, Path)
 
-WORK_DIR = Path("/usr/scratch/skaram7/hlsdataset_workdir_parallel_test_run")
+WORK_DIR = DIR_DATASETS / "hlsfactory_workdir_parallel_test_run"
+
 if WORK_DIR.exists():
     shutil.rmtree(WORK_DIR)
 WORK_DIR.mkdir()
 
-
-N_JOBS = 32
+N_JOBS = get_env_vars(["N_JOBS"])["N_JOBS"]
+assert isinstance(N_JOBS, int)
 CPU_AFFINITY = list(range(N_JOBS))
 
 
-HLS_DATASET_DIR = DIR_CURRENT_SCRIPT.parent / "fpga_ml_dataset" / "HLS_dataset"
-DIR_DATASET_POLYBENCH_XILINX = HLS_DATASET_DIR / "polybench"
-DIR_DATASET_MACHSUITE_XILINX = HLS_DATASET_DIR / "machsuite"
-DIR_DATASET_CHSTONE_XILINX = HLS_DATASET_DIR / "chstone"
-
-
-dataset_polybench_xilinx = DesignDataset.from_dir(
-    "polybench_xilinx",
-    DIR_DATASET_POLYBENCH_XILINX,
-).copy_dataset(WORK_DIR)
-
-dataset_machsuite_xilinx = DesignDataset.from_dir(
-    "machsuite_xilinx",
-    DIR_DATASET_MACHSUITE_XILINX,
-    exclude_dir_filter=lambda dir: dir.name == "common",
-).copy_dataset(WORK_DIR)
-
-dataset_chstone_xilinx = DesignDataset.from_dir(
-    "chstone_xilinx",
-    DIR_DATASET_CHSTONE_XILINX,
-).copy_dataset(WORK_DIR)
+dataset_polybench_xilinx = dataset_polybench_builder("polybench_xilinx", WORK_DIR)
+dataset_machsuite_xilinx = dataset_machsuite_builder("machsuite_xilinx", WORK_DIR)
+dataset_chstone_xilinx = dataset_chstone_builder("chstone_xilinx", WORK_DIR)
 
 
 datasets = {
@@ -102,10 +91,13 @@ datasets_fine_post_frontend = (
 TIMEOUT_HLS_SYNTH = 60.0 * 5  # 5 minutes
 
 
-VIVADO_PATH = Path("/tools/software/xilinx/Vivado/2023.1")
-VITIS_HLS_PATH = Path("/tools/software/xilinx/Vitis_HLS/2023.1")
-VITIS_HLS_BIN = VITIS_HLS_PATH / "bin" / "vitis_hls"
+VIVADO_PATH = get_env_vars(["VIVADO_PATH__2023_1"])["VIVADO_PATH__2023_1"]
+assert isinstance(VIVADO_PATH, Path)
+VITIS_HLS_PATH = get_env_vars(["VITIS_HLS_PATH__2023_1"])["VITIS_HLS_PATH__2023_1"]
+assert isinstance(VITIS_HLS_PATH, Path)
 
+VIVADO_BIN = VIVADO_PATH / "bin" / "vivado"
+VITIS_HLS_BIN = VITIS_HLS_PATH / "bin" / "vitis_hls"
 
 toolflow_vitis_hls_synth = VitisHLSSynthFlow(
     vitis_hls_bin=str(VITIS_HLS_BIN),

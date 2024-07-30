@@ -6,20 +6,23 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.axes import Axes
 from matplotlib.patches import Patch
+from utils.utils import get_env_vars
 
-DIR_CURRENT_SCRIPT = Path(__file__).parent
-
-FIGURES_DIR = DIR_CURRENT_SCRIPT / "figures"
+FIGURES_DIR = get_env_vars(["DIR_FIGURES"])["DIR_FIGURES"]
+assert isinstance(FIGURES_DIR, Path)
 FIGURES_DIR.mkdir(exist_ok=True)
 
-DATA_DIR = DIR_CURRENT_SCRIPT / "data"
+DATA_DIR = get_env_vars(["DIR_RESULTS"])["DIR_RESULTS"]
+assert isinstance(DATA_DIR, Path)
 DATA_DIR.mkdir(exist_ok=True)
 
+DIR_DATASETS = get_env_vars(["DIR_DATASETS"])["DIR_DATASETS"]
+assert isinstance(DIR_DATASETS, Path)
 
-WORK_DIR = Path("/usr/scratch/skaram7/hlsdataset_workdir_parallel_test_run")
+WORK_DIR = DIR_DATASETS / "hlsfactory_workdir_parallel_test_run"
 
 datasets = list(WORK_DIR.glob("*__post_frontend"))
-print(datasets)
+# print(datasets)
 
 design_data = []
 for dataset in datasets:
@@ -285,61 +288,3 @@ fig.legend(
 fig.tight_layout()
 fig.subplots_adjust(bottom=0.15)
 fig.savefig(FIGURES_DIR / "timeline_plot_v3.png", dpi=300)
-
-
-# def lpt_scheduling(df, n_cores):
-#     df_scheduling = df.copy()
-
-#     # drop t_start and t_end columns
-#     df_scheduling = df_scheduling.drop(columns=["t_start", "t_end", "core"])
-#     # sort by dt in descending order
-#     df_scheduling = df_scheduling.sort_values("dt", ascending=False)
-
-#     solution = {i: [] for i in range(n_cores)}
-
-#     for i, row in df_scheduling.iterrows():
-#         row_dict = row.to_dict()
-#         total_runtimes = {
-#             core: sum(data["dt"] for data in solution[core]) for core in solution
-#         }
-#         core = min(solution, key=lambda core: total_runtimes[core])
-#         solution[core].append(row_dict)
-
-#     for core in solution:
-#         t_start = 0
-#         for design in solution[core]:
-#             design["t_start"] = t_start
-#             design["t_end"] = t_start + design["dt"]
-#             t_start = design["t_end"]
-
-#         for design in solution[core]:
-#             design["core"] = core
-
-#     data_flat = [data for core in solution.values() for data in core]
-#     df_solution = pd.DataFrame(data_flat)
-#     return df_solution
-
-
-# df_sch = lpt_scheduling(df_naive_adjusted, 32)
-# max_time_sch = df_sch["t_end"].max()
-# sch_speedup_ratio = max_time_naive / max_time_sch
-# sch_speedup_percent = (max_time_naive - max_time_sch) / max_time_naive * 100
-
-# print(f"LPT Speedup Ratio: {sch_speedup_ratio:.2f}x")
-# print(f"LPT Speedup Percent: {sch_speedup_percent:.2f}%")
-
-# fig, ax = plt.subplots(figsize=(10, 5))
-# build_timeline_plot(
-#     df_sch,
-#     ax,
-#     adjust_zero=True,
-#     t_max_x_axis=max_time,
-#     cores=CORES_ALL,
-#     draw_dataset_lines=False,
-#     draw_last_line=True,
-# )
-# ax.set_title(
-#     f"LPT Scheduling for Naive Parallelism: {sch_speedup_percent:.2f}% Speedup"
-# )
-# plt.tight_layout()
-# fig.savefig(FIGURES_DIR / "scheduling.png", dpi=300)

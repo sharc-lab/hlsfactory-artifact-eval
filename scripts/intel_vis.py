@@ -6,20 +6,24 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.ticker import NullFormatter
+from utils.utils import get_env_vars
 
-DIR_CURRENT_SCRIPT = Path(__file__).parent
-
-FIGURES_DIR = DIR_CURRENT_SCRIPT / "figures"
+FIGURES_DIR = get_env_vars(["DIR_FIGURES"])["DIR_FIGURES"]
+assert isinstance(FIGURES_DIR, Path)
 FIGURES_DIR.mkdir(exist_ok=True)
 
-DATA_DIR = DIR_CURRENT_SCRIPT / "data"
+DATA_DIR = get_env_vars(["DIR_RESULTS"])["DIR_RESULTS"]
+assert isinstance(DATA_DIR, Path)
 DATA_DIR.mkdir(exist_ok=True)
 
+DIR_DATASETS = get_env_vars(["DIR_DATASETS"])["DIR_DATASETS"]
+assert isinstance(DIR_DATASETS, Path)
 
-DIR_INTEL_MACHSUITE = Path(
-    "/usr/scratch/skaram7/intel_data/machsuite_intel_csv_results"
+
+DIR_INTEL_MACHSUITE = (
+    DIR_DATASETS / "hlsfactory_intel_data" / "machsuite_intel_csv_results"
 )
-DIR_INTEL_POLYBENCH = Path("/usr/scratch/skaram7/intel_data/Intel_HLSDataset_demo")
+DIR_INTEL_POLYBENCH = DIR_DATASETS / "hlsfactory_intel_data" / "Intel_HLSDataset_demo"
 
 
 def load_data_polybench(data_dir: Path) -> pd.DataFrame:
@@ -47,6 +51,13 @@ def load_data_polybench(data_dir: Path) -> pd.DataFrame:
         }
         data_list.append(name)
     df = pd.DataFrame(data_list)
+
+    df["alm"] = df["alm"].astype(float)
+    df["reg"] = df["reg"].astype(float)
+    df["dsp"] = df["dsp"].astype(float)
+    df["ram"] = df["ram"].astype(float)
+    df["mlab"] = df["mlab"].astype(float)
+
     return df
 
 
@@ -80,6 +91,11 @@ def load_data_machsuite(data_dir: Path):
                 "mlab_system": "mlab",
             }
         )
+        df_csv_single["alm"] = df_csv_single["alm"].astype(float)
+        df_csv_single["reg"] = df_csv_single["reg"].astype(float)
+        df_csv_single["dsp"] = df_csv_single["dsp"].astype(float)
+        df_csv_single["ram"] = df_csv_single["ram"].astype(float)
+        df_csv_single["mlab"] = df_csv_single["mlab"].astype(float)
         # rename clock to clock_speed
         df_csv_single = df_csv_single.rename(columns={"clock": "clock_speed"})
 
@@ -92,7 +108,7 @@ def load_data_machsuite(data_dir: Path):
     return df
 
 
-USE_CHACHE = True
+USE_CHACHE = False
 if not USE_CHACHE or not (DATA_DIR / "data_intel.csv").exists():
     print("Computing data")
     df_polybench = load_data_polybench(DIR_INTEL_POLYBENCH)
@@ -112,6 +128,7 @@ else:
 
 # print number of samples
 print(df_intel.shape)
+print(df_intel.dtypes)
 
 # font size
 # plt.rcParams.update({"font.size": 12})
