@@ -1,7 +1,7 @@
 import shutil
+import urllib.request
 from pathlib import Path
 
-import urllib3
 from utils.utils import get_env_vars
 
 DATASET_FILE_NAMES = [
@@ -29,11 +29,10 @@ def download_data_zenodo():
 
         print(f"Downloading {dataset_file_name} from {download_url}")
 
-        with urllib3.PoolManager() as http:
-            with http.request(
-                "GET", download_url, preload_content=False
-            ) as r, download_path.open("wb") as out_file:
-                shutil.copyfileobj(r, out_file)
+        with urllib.request.urlopen(download_url) as response, download_path.open(
+            "wb"
+        ) as out_file:
+            shutil.copyfileobj(response, out_file)
 
         shutil.unpack_archive(download_path, extract_dir=DIR_DATASETS)
 
@@ -46,11 +45,10 @@ def download_data_hlsyn():
 
     print(f"Downloading {HLSYN_FILE_NAME} from {HLSYN_URL}")
 
-    with urllib3.PoolManager() as http:
-        with http.request(
-            "GET", HLSYN_URL, preload_content=False
-        ) as r, download_path.open("wb") as out_file:
-            shutil.copyfileobj(r, out_file)
+    with urllib.request.urlopen(HLSYN_URL) as response, download_path.open(
+        "wb"
+    ) as out_file:
+        shutil.copyfileobj(response, out_file)
 
     shutil.unpack_archive(download_path, extract_dir=DIR_DATASETS / "HLSyn_data")
 
