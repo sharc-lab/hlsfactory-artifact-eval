@@ -5,7 +5,7 @@ This repository contains directions and scripts to reproduce the case studies in
 If you want to quickly run the artifact evaluation, you can follow the commands below:
 
 ```bash
-conda env create -f environment.yml
+conda env create -f environment.yaml
 conda activate hlsfactory-ae
 bash run_all.sh
 ```
